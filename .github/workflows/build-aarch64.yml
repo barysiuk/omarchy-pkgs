@@ -115,6 +115,8 @@ jobs:
       - name: Verify repository
         id: verify
         run: |
+          source helpers/package-metadata.sh
+          recipes="$PWD/pkgbuilds"
           cd "$REPO_DIR"
           dbdir=$(mktemp -d)
           trap 'rm -rf "$dbdir"' EXIT
@@ -131,7 +133,9 @@ jobs:
           missing=0
           read -r -a pkgbases <<< "$PACKAGES"
           for p in "${pkgbases[@]}"; do
-            grep -Fxq "$p" "$dbdir/pkgbases" || { echo "missing pkgbase: $p" >&2; missing=1; }
+            base=$(package_pkgbuild_var "$recipes/$p" pkgbase)
+            [[ -n $base ]] || base=$(package_pkgbuild_var "$recipes/$p" pkgname)
+            grep -Fxq "$base" "$dbdir/pkgbases" || { echo "missing pkgbase: $base ($p)" >&2; missing=1; }
           done
           du -sh .
           exit $missing
