@@ -14,7 +14,7 @@ _sha256=d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7
 source=("${_dtb}" 'README.package.md' 'omarchy-surface-pro-12.conf' 'verify-surface-uki.py')
 sha256sums=('d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7'
             '09eb03b61c0c06af32088b2065ed6acd2278eacfb6f60743b78f014c00ffd23c'
-            '5192f9a20acd2e0201bc8ac6d38e08bd023c74d63889ee0fb74023c2b4530945'
+            'cc587a8ac506e9de3deb9d74ca3d5f02ee6767993f1167ce55e948bc72d76825'
             'f3be1840e3510e4e42764da10715721ffa07f2d2c57fb120a0c11a3de28a60b3')
 
 prepare() {
