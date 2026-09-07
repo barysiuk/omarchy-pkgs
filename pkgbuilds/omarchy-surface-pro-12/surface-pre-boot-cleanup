@@ -5,6 +5,7 @@ set -euo pipefail
 
 rm -f /etc/limine-entry-tool.d/qualcomm-snapdragon.conf
 rm -f /etc/modprobe.d/qualcomm-adsp-nofw.conf
+rm -f /etc/mkinitcpio.conf.d/surface_device_modules.conf
 
 # Remove only the runtime's marked automatic-DTB section.  The hook runs before
 # every limine-mkinitcpio rebuild, preserving the fixed-DTB contract on updates.

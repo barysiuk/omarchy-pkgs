@@ -9,6 +9,7 @@ p=open(sys.argv[1], 'rb').read(); assert p[:4] == b'\xd0\r\xfe\xed'; assert b'mi
 PY
 grep -Fqx 'MKINITCPIO_UKI_OPTIONS="--ukiconfig /etc/kernel/uki-surface-pro-12.conf"' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'DeviceTree=/usr/lib/omarchy-surface-pro-12/x1p42100-microsoft-sp12in.dtb' "$dir/uki-surface-pro-12.conf"
+grep -Fqx 'HWIDs=' "$dir/uki-surface-pro-12.conf"
 grep -Fqx 'HOOKS=(${HOOKS[@]/filesystems/sd-encrypt filesystems})' "$dir/90-omarchy-surface-pro-12-sd-encrypt.conf"
 ! grep -Fq -- '--dtb' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'ENABLE_UKI=yes' "$dir/omarchy-surface-pro-12.conf"
@@ -24,5 +25,17 @@ done
 [[ $(jq -r '.channels[]' "$dir/.omarchy/package.json") == edge ]]
 grep -Fqx 'rm -f /etc/limine-entry-tool.d/qualcomm-snapdragon.conf' "$dir/surface-pre-boot-cleanup"
 grep -Fqx 'rm -f /etc/modprobe.d/qualcomm-adsp-nofw.conf' "$dir/surface-pre-boot-cleanup"
+grep -Fqx 'rm -f /etc/mkinitcpio.conf.d/surface_device_modules.conf' "$dir/surface-pre-boot-cleanup"
 grep -Fq 'BEGIN OMARCHY QUALCOMM DEVICE TREES' "$dir/surface-pre-boot-cleanup"
+scratch=$(mktemp -d)
+trap 'rm -rf "$scratch"' EXIT
+mkdir -p "$scratch/etc/limine-entry-tool.d" "$scratch/etc/modprobe.d" "$scratch/etc/mkinitcpio.conf.d" "$scratch/etc/kernel"
+touch "$scratch/etc/limine-entry-tool.d/qualcomm-snapdragon.conf" "$scratch/etc/modprobe.d/qualcomm-adsp-nofw.conf" "$scratch/etc/mkinitcpio.conf.d/surface_device_modules.conf"
+printf '# BEGIN OMARCHY QUALCOMM DEVICE TREES\n[UKI]\nDeviceTreeAuto=/bad\n# END OMARCHY QUALCOMM DEVICE TREES\n' >"$scratch/etc/kernel/uki.conf"
+sed "s# /etc/# $scratch/etc/#g" "$dir/surface-pre-boot-cleanup" | bash
+test ! -e "$scratch/etc/mkinitcpio.conf.d/surface_device_modules.conf"
+test ! -e "$scratch/etc/limine-entry-tool.d/qualcomm-snapdragon.conf"
+test ! -e "$scratch/etc/modprobe.d/qualcomm-adsp-nofw.conf"
+! grep -Fq 'DeviceTreeAuto=' "$scratch/etc/kernel/uki.conf"
+grep -Fqx 'HOOKS=(${HOOKS[@]/filesystems/sd-encrypt filesystems})' "$dir/90-omarchy-surface-pro-12-sd-encrypt.conf"
 echo 'ok - Surface Pro 12 fixed DTB package metadata and Limine semantics'
