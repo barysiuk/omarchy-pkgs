@@ -54,6 +54,18 @@ class BuildAarch64Test(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("PACKAGES=example\n", (self.root / "env").read_text())
 
+    def test_requested_local_package_metadata_is_eligible_for_edge_builds(self):
+        """A recipe without .omarchy metadata is silently skipped by build.sh."""
+        recipe = self.root / "pkgbuilds/example"
+        metadata = recipe / ".omarchy/package.json"
+        metadata.parent.mkdir()
+        metadata.write_text('{"source":"local","channels":["edge"]}\n')
+        result = subprocess.run(
+            ["bash", "-euo", "pipefail", "-c", "source helpers/package-metadata.sh; package_builds_for_mirror pkgbuilds/example edge"],
+            cwd=self.root, capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_options_paths_unknown_packages_and_newlines_are_rejected(self):
         for value in ("--dry-run", "..", "../example", "missing", "example\ninjected=value"):
             with self.subTest(value=value):
