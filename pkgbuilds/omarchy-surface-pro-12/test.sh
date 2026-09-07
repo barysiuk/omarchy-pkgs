@@ -14,6 +14,12 @@ grep -Fqx 'MKINITCPIO_FALLBACK=yes' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'KERNEL_CMDLINE[default]+="initramfs_async=0 clk_ignore_unused pd_ignore_unused arm64.nopauth"' "$dir/omarchy-surface-pro-12.conf"
 ! grep -Eq 'archiso|systemd\.tpm2_wait|modprobe\.blacklist|debug' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx "arch=('aarch64')" "$dir/PKGBUILD"
+for dep in limine-mkinitcpio-hook limine-snapper-sync mkinitcpio snapper; do
+  grep -Fqx "depends=('limine-mkinitcpio-hook' 'limine-snapper-sync' 'mkinitcpio' 'snapper')" "$dir/PKGBUILD"
+done
 [[ $(jq -r '.source' "$dir/.omarchy/package.json") == local ]]
 [[ $(jq -r '.channels[]' "$dir/.omarchy/package.json") == edge ]]
+grep -Fqx 'rm -f /etc/limine-entry-tool.d/qualcomm-snapdragon.conf' "$dir/surface-pre-boot-cleanup"
+grep -Fqx 'rm -f /etc/modprobe.d/qualcomm-adsp-nofw.conf' "$dir/surface-pre-boot-cleanup"
+grep -Fq 'BEGIN OMARCHY QUALCOMM DEVICE TREES' "$dir/surface-pre-boot-cleanup"
 echo 'ok - Surface Pro 12 fixed DTB package metadata and Limine semantics'

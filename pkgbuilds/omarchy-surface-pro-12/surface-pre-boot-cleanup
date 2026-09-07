@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# The generic Qualcomm scripts are correct for automatic-DTB Snapdragon PCs,
+# but this exact Surface uses a reviewed fixed DTB and production cmdline.
+set -euo pipefail
+
+rm -f /etc/limine-entry-tool.d/qualcomm-snapdragon.conf
+rm -f /etc/modprobe.d/qualcomm-adsp-nofw.conf
+
+# Remove only the runtime's marked automatic-DTB section.  The hook runs before
+# every limine-mkinitcpio rebuild, preserving the fixed-DTB contract on updates.
+uki=/etc/kernel/uki.conf
+if [[ -f $uki ]]; then
+  tmp=$(mktemp "${uki}.XXXXXX")
+  awk '
+    $0 == "# BEGIN OMARCHY QUALCOMM DEVICE TREES" { skip=1; next }
+    $0 == "# END OMARCHY QUALCOMM DEVICE TREES" { skip=0; next }
+    !skip { print }
+  ' "$uki" >"$tmp"
+  if cmp -s "$uki" "$tmp"; then
+    rm -f "$tmp"
+  else
+    mv -f "$tmp" "$uki"
+  fi
+fi
