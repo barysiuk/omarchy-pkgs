@@ -6,15 +6,16 @@ pkgdesc='Experimental fixed-DTB installed boot support for Surface Pro 12in 1st 
 arch=('aarch64')
 url='https://github.com/omacom/omarchy-pkgs'
 license=('custom')
-depends=('limine-mkinitcpio-hook' 'limine-snapper-sync' 'mkinitcpio' 'snapper')
+depends=('limine-mkinitcpio-hook' 'limine-snapper-sync' 'mkinitcpio' 'snapper' 'systemd-ukify')
 makedepends=('python')
 options=('!strip')
 _dtb=x1p42100-microsoft-sp12in.dtb
 _sha256=d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7
-source=("${_dtb}" 'README.package.md' 'omarchy-surface-pro-12.conf' 'surface-pre-boot-cleanup' 'verify-surface-uki.py')
+source=("${_dtb}" 'README.package.md' 'omarchy-surface-pro-12.conf' 'uki-surface-pro-12.conf' 'surface-pre-boot-cleanup' 'verify-surface-uki.py')
 sha256sums=('d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7'
             '09eb03b61c0c06af32088b2065ed6acd2278eacfb6f60743b78f014c00ffd23c'
-            'cc587a8ac506e9de3deb9d74ca3d5f02ee6767993f1167ce55e948bc72d76825'
+            '06b1b8b1eda85c6b7d8f87be06e37c167bb0f5c581955a2f00864ec59c6468b9'
+            'b8f413a77b1696109d1f7e45ebd106e69d9415d27f51f88bdabb598b2aba514a'
             '0db0464e5e981f5de7675474e78e99c8ebfba8ac69b925b9ae960c217cf4f743'
             'f3be1840e3510e4e42764da10715721ffa07f2d2c57fb120a0c11a3de28a60b3')
 
@@ -32,7 +33,8 @@ PY
 
 check() {
   prepare
-  grep -Fqx 'MKINITCPIO_UKI_OPTIONS="--dtb /usr/lib/omarchy-surface-pro-12/x1p42100-microsoft-sp12in.dtb"' omarchy-surface-pro-12.conf
+  grep -Fqx 'MKINITCPIO_UKI_OPTIONS="--ukiconfig /etc/kernel/uki-surface-pro-12.conf"' omarchy-surface-pro-12.conf
+  grep -Fqx 'DeviceTree=/usr/lib/omarchy-surface-pro-12/x1p42100-microsoft-sp12in.dtb' uki-surface-pro-12.conf
   grep -Fqx 'MKINITCPIO_FALLBACK=yes' omarchy-surface-pro-12.conf
   grep -Fqx 'KERNEL_CMDLINE[default]+="initramfs_async=0 clk_ignore_unused pd_ignore_unused arm64.nopauth"' omarchy-surface-pro-12.conf
   grep -Fqx 'rm -f /etc/limine-entry-tool.d/qualcomm-snapdragon.conf' surface-pre-boot-cleanup
@@ -42,6 +44,7 @@ package() {
   install -Dm644 "$_dtb" "$pkgdir/usr/lib/$pkgname/$_dtb"
   install -Dm644 README.package.md "$pkgdir/usr/share/doc/$pkgname/README.md"
   install -Dm644 omarchy-surface-pro-12.conf "$pkgdir/etc/limine-entry-tool.d/90-omarchy-surface-pro-12.conf"
+  install -Dm644 uki-surface-pro-12.conf "$pkgdir/etc/kernel/uki-surface-pro-12.conf"
   install -Dm755 surface-pre-boot-cleanup "$pkgdir/etc/boot/hooks/pre.d/95-omarchy-surface-pro-12"
   install -Dm755 verify-surface-uki.py "$pkgdir/usr/lib/$pkgname/verify-surface-uki.py"
 }
