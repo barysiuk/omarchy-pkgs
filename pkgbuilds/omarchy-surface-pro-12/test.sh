@@ -9,6 +9,7 @@ p=open(sys.argv[1], 'rb').read(); assert p[:4] == b'\xd0\r\xfe\xed'; assert b'mi
 PY
 grep -Fqx 'MKINITCPIO_UKI_OPTIONS="--ukiconfig /etc/kernel/uki-surface-pro-12.conf"' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'DeviceTree=/usr/lib/omarchy-surface-pro-12/x1p42100-microsoft-sp12in.dtb' "$dir/uki-surface-pro-12.conf"
+grep -Fqx 'HOOKS=(${HOOKS[@]/filesystems/sd-encrypt filesystems})' "$dir/90-omarchy-surface-pro-12-sd-encrypt.conf"
 ! grep -Fq -- '--dtb' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'ENABLE_UKI=yes' "$dir/omarchy-surface-pro-12.conf"
 grep -Fqx 'CUSTOM_UKI_NAME=omarchy' "$dir/omarchy-surface-pro-12.conf"
