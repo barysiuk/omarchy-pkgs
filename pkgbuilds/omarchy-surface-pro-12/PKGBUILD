@@ -1,0 +1,44 @@
+# Experimental support for the Microsoft Surface Pro 12in 1st Edition.
+pkgname=omarchy-surface-pro-12
+pkgver=1
+pkgrel=1
+pkgdesc='Experimental fixed-DTB installed boot support for Surface Pro 12in 1st Edition'
+arch=('aarch64')
+url='https://github.com/omacom/omarchy-pkgs'
+license=('custom')
+depends=('limine-mkinitcpio-hook' 'mkinitcpio')
+makedepends=('python')
+options=('!strip')
+_dtb=x1p42100-microsoft-sp12in.dtb
+_sha256=d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7
+source=("${_dtb}" 'README.package.md' 'omarchy-surface-pro-12.conf' 'verify-surface-uki.py')
+sha256sums=('d7ed4b073c7344cb0bb2c3f7d00655df60b473588a5c0364af54537dc2c672c7'
+            '09eb03b61c0c06af32088b2065ed6acd2278eacfb6f60743b78f014c00ffd23c'
+            '5192f9a20acd2e0201bc8ac6d38e08bd023c74d63889ee0fb74023c2b4530945'
+            'f3be1840e3510e4e42764da10715721ffa07f2d2c57fb120a0c11a3de28a60b3')
+
+prepare() {
+  printf '%s  %s\n' "$_sha256" "$_dtb" | sha256sum -c -
+  python3 - "$_dtb" <<'PY'
+import struct, sys
+p = open(sys.argv[1], 'rb').read()
+assert p[:4] == b'\xd0\r\xfe\xed', 'not a flattened device tree'
+size = struct.unpack_from('>I', p, 4)[0]
+assert size <= len(p), 'invalid FDT total size'
+assert b'microsoft,surface-pro-12in\0' in p[:size], 'unexpected DT compatible'
+PY
+}
+
+check() {
+  prepare
+  grep -Fqx 'MKINITCPIO_UKI_OPTIONS="--dtb /usr/lib/omarchy-surface-pro-12/x1p42100-microsoft-sp12in.dtb"' omarchy-surface-pro-12.conf
+  grep -Fqx 'MKINITCPIO_FALLBACK=yes' omarchy-surface-pro-12.conf
+  grep -Fqx 'KERNEL_CMDLINE[default]+="initramfs_async=0 clk_ignore_unused pd_ignore_unused arm64.nopauth"' omarchy-surface-pro-12.conf
+}
+
+package() {
+  install -Dm644 "$_dtb" "$pkgdir/usr/lib/$pkgname/$_dtb"
+  install -Dm644 README.package.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+  install -Dm644 omarchy-surface-pro-12.conf "$pkgdir/etc/limine-entry-tool.d/90-omarchy-surface-pro-12.conf"
+  install -Dm755 verify-surface-uki.py "$pkgdir/usr/lib/$pkgname/verify-surface-uki.py"
+}
